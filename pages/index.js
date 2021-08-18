@@ -1,12 +1,13 @@
 import Head from "next/head"
 import styles from "../styles/Home.module.css"
  
-// The Storyblok Client & hook
-import Storyblok, { useStoryblok } from "../lib/storyblok"
+// The Storyblok Client
+import Storyblok from "../lib/storyblok"
 import DynamicComponent from '../components/DynamicComponent'
  
-export default function Home({ story, preview }) {
-  story = useStoryblok(story, preview)
+export default function Home(props) {
+  const story = props.story
+ 
   return (
     <div className={styles.container}>
       <Head>
@@ -20,9 +21,7 @@ export default function Home({ story, preview }) {
         </h1>
       </header>
  
-      <main>
-        <DynamicComponent blok={story.content} />
-      </main>
+       <DynamicComponent blok={story.content} />
     </div>
   )
 }
@@ -30,7 +29,7 @@ export default function Home({ story, preview }) {
 export async function getStaticProps(context) {
   let slug = "home"
   let params = {
-    version: "published", // or 'draft'
+    version: "draft", // or 'published'
   }
  
   if (context.preview) {
@@ -45,6 +44,6 @@ export async function getStaticProps(context) {
       story: data ? data.story : false,
       preview: context.preview || false
     },
-    revalidate: 3600, // revalidate every hour
+    revalidate: 10, 
   }
 }
