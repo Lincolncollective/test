@@ -1,13 +1,14 @@
 import Head from "next/head"
 import styles from "../styles/Home.module.css"
  
-// The Storyblok Client
-import Storyblok from "../lib/storyblok"
+// The Storyblok Client & hook
+import Storyblok, { useStoryblok } from "../lib/storyblok"
 import DynamicComponent from '../components/DynamicComponent'
  
-export default function Home(props) {
-  const story = props.story
- 
+export default function Home({ story, preview }) {
+  const enableBridge = true; // load the storyblok bridge everywhere
+  // const enableBridge = preview; // enable bridge only in prevew mode
+  story = useStoryblok(story, enableBridge)
   return (
     <div className={styles.container}>
       <Head>
@@ -21,29 +22,32 @@ export default function Home(props) {
         </h1>
       </header>
  
-       <DynamicComponent blok={story.content} />
+      <DynamicComponent blok={story.content} />
     </div>
   )
 }
  
-export async function getStaticProps(context) {
+export async function getStaticProps({ preview = false }) {
+  // home is the default slug for the homepage in Storyblok
   let slug = "home"
-  let params = {
-    version: "draft", // or 'published'
+  // load the published content outside of the preview mode
+  let sbParams = {
+    version: "published", // or 'draft'
   }
  
-  if (context.preview) {
-    params.version = "draft"
-    params.cv = Date.now()
+  if (preview) {
+    // load the draft version inside of the preview mode
+    sbParams.version = "draft"
+    sbParams.cv = Date.now()
   }
  
-  let { data } = await Storyblok.get(`cdn/stories/${slug}`, params)
+  let { data } = await Storyblok.get(`cdn/stories/${slug}`, sbParams)
  
   return {
     props: {
-      story: data ? data.story : false,
-      preview: context.preview || false
+      story: data ? data.story : null,
+      preview
     },
-    revalidate: 10, 
+    revalidate: 3600, // revalidate every hour
   }
 }
