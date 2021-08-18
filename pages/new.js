@@ -28,7 +28,7 @@ export default function Home({ story, preview }) {
 }
  
 export async function getStaticProps(context) {
-  let slug = "home"
+  let slug = "new"
   let params = {
     version: "published", // or 'draft'
   }
